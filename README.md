@@ -18,3 +18,9 @@ A Typing application to check your speed and accuracy in typing
 6. The program calculates time taken, words per minute (WPM), and accuracy.
 7. The results are displayed on the result screen.
 8. The user can restart the test for multiple attempts.
+
+# Working:
+LOGIN SCREEN:
+<img width="800" height="600" alt="Screenshot 2025-12-19 104515" src="https://github.com/user-attachments/assets/f6fadec3-a3be-47e1-8863-b924221be785" />
+
+
