@@ -19,6 +19,12 @@ A Typing application to check your speed and accuracy in typing
 7. The results are displayed on the result screen.
 8. The user can restart the test for multiple attempts.
 
+# Data Structures Used
+> 1. Lists
+2. Dictionary
+3. String
+4. Variables
+   
 # Working:
 LOGIN SCREEN:
 
