@@ -20,7 +20,7 @@ A Typing application to check your speed and accuracy in typing
 8. The user can restart the test for multiple attempts.
 
 # Data Structures Used
-> 1. Lists
+1. Lists
 2. Dictionary
 3. String
 4. Variables
