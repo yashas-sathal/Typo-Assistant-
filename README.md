@@ -1,7 +1,7 @@
-# Typo-Assistant:
+# Typo-Assistant
 A Typing application to check your speed and accuracy in typing
 
-# Approach:
+# Approach
 > The project follows a structured and modular approach using Python and Tkinter. Initially, a graphical user interface (GUI) is designed using Tkinter frames to divide the application into different screens such as login, typing test, and results.
 
 > A random typing passage is selected from a predefined list. The timer starts automatically when the user begins typing, ensuring accurate time measurement. The user’s input is then captured and processed to calculate typing speed and accuracy.
@@ -25,7 +25,7 @@ A Typing application to check your speed and accuracy in typing
 3. String
 4. Variables
    
-# Working:
+# Working
 LOGIN SCREEN:
 
 <img width="800" height="600" alt="Screenshot 2025-12-19 104515" src="https://github.com/user-attachments/assets/f6fadec3-a3be-47e1-8863-b924221be785" />
