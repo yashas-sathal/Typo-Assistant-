@@ -21,6 +21,7 @@ A Typing application to check your speed and accuracy in typing
 
 # Working:
 LOGIN SCREEN:
+
 <img width="800" height="600" alt="Screenshot 2025-12-19 104515" src="https://github.com/user-attachments/assets/f6fadec3-a3be-47e1-8863-b924221be785" />
 
 
