@@ -1,0 +1,224 @@
+import tkinter as tk
+from tkinter import messagebox
+import time
+import random
+
+# --- GLOBAL CONFIGURATION ---
+
+# List of sample texts the user will be asked to type.
+TEST_PASSAGES = [
+    "The quick brown fox jumps over the lazy dog is a pangram frequently used for testing.",
+    "Programming in Python with Tkinter is a great way to build interactive desktop applications.",
+    "To calculate words per minute, we measure the time taken and the number of correct characters typed.",
+    "Learning to use functions and classes effectively will make your code much easier to maintain and read.",
+    "The secret of getting ahead is getting started, and the secret of getting started is breaking down tasks.",
+    "Building a project from scratch helps solidify your understanding of core programming concepts and logic."
+]
+
+# --- CORE LOGIC FUNCTIONS ---
+
+def calculate_metrics(target_text, typed_text, time_taken):
+    """
+    Calculates the accuracy percentage and Words Per Minute (WPM).
+    A 'word' is standardized as 5 characters.
+    """
+    if time_taken == 0:
+        return 0.0, 0.0 # Avoid division by zero
+
+    # 1. Calculate Correct Characters
+    min_length = min(len(target_text), len(typed_text))
+    correct_characters = 0
+    
+    # Compare character by character up to the length of the shorter text
+    for i in range(min_length):
+        if target_text[i] == typed_text[i]:
+            correct_characters += 1
+    
+    # 2. Calculate Accuracy
+    if len(target_text) == 0:
+        accuracy = 0.0
+    else:
+        # Accuracy based on correct characters relative to the target length
+        accuracy = (correct_characters / len(target_text)) * 100
+    
+    # 3. Calculate WPM (Words Per Minute)
+    # WPM uses the standard definition: 1 Word = 5 Characters.
+    characters_per_minute = (correct_characters / time_taken) * 60
+    wpm = characters_per_minute / 5
+    
+    return wpm, accuracy
+
+# --- TKINTER APPLICATION CLASS ---
+
+class TypingTestApp:
+    def __init__(self, master):
+        self.master = master
+        master.title("PyType Speed Test")
+        master.geometry("800x600")
+        master.resizable(False, False)
+        
+        # Internal State Variables
+        self.user_name = ""
+        self.target_text = ""
+        self.start_time = None
+        
+        # Configure a nice font for the application
+        master.option_add('*Font', 'Helvetica 12')
+        
+        # Set up frames (containers for different sections/screens)
+        # These frames are created once in __init__
+        self.login_frame = tk.Frame(master, padx=20, pady=20)
+        self.test_frame = tk.Frame(master, padx=20, pady=20)
+        self.results_frame = tk.Frame(master, padx=20, pady=20)
+        
+        # The login frame needs its widgets built initially
+        self._setup_login_widgets()
+        
+        # Show the initial login screen
+        self.show_login_screen()
+
+    def _setup_login_widgets(self):
+        """Helper function to build widgets in the login frame once."""
+        # Title Label
+        tk.Label(self.login_frame, text="Welcome to PyType Speed Test!", font=('Helvetica', 18, 'bold'), pady=10).pack()
+        tk.Label(self.login_frame, text="Enter your name to begin the challenge:", font=('Helvetica', 12)).pack(pady=10)
+
+        # Name Entry Field
+        self.name_entry = tk.Entry(self.login_frame, width=40, bd=2, relief=tk.GROOVE)
+        self.name_entry.pack(pady=5)
+
+        # Start Button
+        tk.Button(self.login_frame, text="Start Test", command=self.start_test_flow, bg='#4CAF50', fg='white', width=20, height=2).pack(pady=20)
+
+
+    # --- SCREEN 1: LOGIN/SETUP ---
+    def show_login_screen(self):
+        # Hide other frames
+        self.test_frame.pack_forget()
+        self.results_frame.pack_forget()
+        
+        # Center the frame within the root window
+        self.login_frame.pack(expand=True)
+
+    def start_test_flow(self):
+        self.user_name = self.name_entry.get().strip()
+        if not self.user_name:
+            messagebox.showwarning("Input Error", "Please enter your name to start the test.")
+            return
+
+        # Prepare for the test
+        self.target_text = random.choice(TEST_PASSAGES)
+        self.show_test_screen()
+
+    # --- SCREEN 2: TYPING TEST ---
+    def show_test_screen(self):
+        self.login_frame.pack_forget()
+        self.results_frame.pack_forget()
+        
+        # Clear existing widgets from the test frame and rebuild (necessary since content changes per test)
+        for widget in self.test_frame.winfo_children():
+            widget.destroy()
+
+        self.test_frame.pack(expand=True)
+        
+        # Greeting Label
+        tk.Label(self.test_frame, text=f"Hello, {self.user_name}!", font=('Helvetica', 14, 'bold')).pack(pady=10)
+        tk.Label(self.test_frame, text="Type the passage below exactly as displayed:", font=('Helvetica', 12, 'italic')).pack(pady=5)
+        
+        # Passage Display (ReadOnly Text Box)
+        passage_display = tk.Text(self.test_frame, wrap=tk.WORD, height=8, width=70, bd=1, relief=tk.SOLID, padx=10, pady=10)
+        passage_display.insert(tk.END, self.target_text)
+        passage_display.config(state=tk.DISABLED, bg="#F0F0F0") # Make it read-only
+        passage_display.pack(pady=15)
+
+        # Input Area Label
+        tk.Label(self.test_frame, text="Your Input:", font=('Helvetica', 12)).pack(pady=5)
+
+        # User Input Field (Text Box)
+        self.input_text = tk.Text(self.test_frame, wrap=tk.WORD, height=8, width=70, bd=2, relief=tk.SUNKEN, padx=10, pady=10)
+        self.input_text.pack(pady=5)
+        
+        # Bind the first key press to start the timer
+        self.input_text.bind('<Key>', self.start_timer)
+        
+        # Finish Button
+        tk.Button(self.test_frame, text="I'm Done!", command=self.finish_test, bg='#FF5722', fg='white', width=20, height=2).pack(pady=20)
+
+    def start_timer(self, event):
+        """Starts the timer on the very first key press."""
+        # Check if the timer is not already running
+        if self.start_time is None:
+            self.start_time = time.time()
+            # Unbind the key event so it only runs once
+            self.input_text.unbind('<Key>')
+
+    def finish_test(self):
+        # 1. Get the typed text
+        typed_text = self.input_text.get("1.0", tk.END + "-1c").strip()
+        
+        # 2. Check if the user started the test (i.e., typed anything)
+        if self.start_time is None:
+            messagebox.showwarning("Test Not Started", "Please start typing before clicking 'I'm Done!'.")
+            return
+
+        # 3. Stop the timer and calculate time taken
+        end_time = time.time()
+        time_taken = end_time - self.start_time
+
+        # 4. Calculate final metrics
+        wpm, accuracy = calculate_metrics(self.target_text, typed_text, time_taken)
+        
+        # Store results for display
+        self.results = {
+            'wpm': wpm,
+            'accuracy': accuracy,
+            'time_taken': time_taken
+        }
+
+        # 5. Reset timer and show results
+        self.start_time = None 
+        self.show_results_screen()
+
+
+    # --- SCREEN 3: RESULTS ---
+    def show_results_screen(self):
+        self.test_frame.pack_forget()
+        self.login_frame.pack_forget()
+        
+        # Clear existing widgets from the results frame and rebuild
+        for widget in self.results_frame.winfo_children():
+            widget.destroy()
+
+        self.results_frame.pack(expand=True)
+
+        # Title Label
+        tk.Label(self.results_frame, text="Test Results", font=('Helvetica', 22, 'bold'), fg='#007BFF').pack(pady=20)
+        tk.Label(self.results_frame, text=f"Well done, {self.user_name}!", font=('Helvetica', 16)).pack(pady=5)
+
+        # Display Metrics
+        tk.Label(self.results_frame, text=f"Time Taken: {self.results['time_taken']:.2f} seconds", font=('Helvetica', 14)).pack(pady=5)
+        
+        # Highlight WPM in a larger font
+        tk.Label(self.results_frame, text=f"Words Per Minute (WPM):", font=('Helvetica', 16, 'bold')).pack(pady=10)
+        tk.Label(self.results_frame, text=f"{self.results['wpm']:.1f}", font=('Helvetica', 48, 'bold'), fg='#4CAF50').pack()
+
+        # Highlight Accuracy
+        tk.Label(self.results_frame, text=f"Accuracy:", font=('Helvetica', 16, 'bold')).pack(pady=10)
+        tk.Label(self.results_frame, text=f"{self.results['accuracy']:.1f}%", font=('Helvetica', 36, 'bold'), fg='#FF5722').pack()
+
+        # Restart Button
+        tk.Button(self.results_frame, text="Try Again", command=self.restart_test, bg='#007BFF', fg='white', width=20, height=2).pack(pady=30)
+        
+    def restart_test(self):
+        # Reset the name entry (but keep the entry widget) and go back to the start screen
+        self.user_name = ""
+        # The login widgets were created once in _setup_login_widgets, so we just clear the text
+        self.name_entry.delete(0, tk.END) 
+        self.show_login_screen()
+
+# --- RUN THE APPLICATION ---
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = TypingTestApp(root)
+    root.mainloop()
